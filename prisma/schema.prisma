@@ -1,0 +1,39 @@
+// This is Prisma schema file.
+// It defines your database connection, the Prisma Client generator,
+// and all your data models.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  // The client is generated into src/ so it's compiled with your app.
+  // It is gitignored — run `npx prisma generate` after cloning.
+}
+
+datasource db {
+  provider = "sqlite"
+  // SQLite needs no server. The database is a single file.
+}
+
+// ─────────────────────────────────────────────
+// USER MODEL
+// ─────────────────────────────────────────────
+
+// Enum for user roles. Keeps values consistent across the app.
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id        String   @id @default(uuid()) // UUID generated automatically
+  firstName String
+  lastName  String
+  email     String   @unique // No two users can share an email
+  password  String   // Will store the bcrypt hash, never the plain password
+  role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt // Prisma updates this on every save
+
+  @@map("users") // The actual table name in the database
+}
