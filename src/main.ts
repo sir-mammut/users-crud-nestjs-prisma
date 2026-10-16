@@ -1,5 +1,7 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 import { AppModule, ObserveInstrument } from './app.module.js';
 
 
@@ -30,7 +32,29 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector)),
   );
+
+    // ── Swagger / OpenAPI ──
+    const swaggerConfig = new DocumentBuilder()
+    .setTitle('Users CRUD API')
+    .setDescription(
+      'A REST API for managing users, built with NestJS, Prisma, and SQLite.',
+    )
+    .setVersion('1.0.0')
+    .addTag('Users', 'User management endpoints')
+    .build();
+
+  const documentFactory = () =>
+    SwaggerModule.createDocument(app, swaggerConfig);
+
+  // Swagger UI will be available at /api/docs
+  SwaggerModule.setup('api/docs', app, documentFactory);
+  
+  // Allow frontend apps to call this API
+  app.enableCors(); // Enable CORS for all routes
+
   await app.listen(process.env.PORT ?? 3000);
-  console.log('🚀 API running at http://localhost:3000/api');
+  console.log(`🚀 API running at http://localhost:${process.env.PORT ?? 3000}/api`);
+  console.log(`📚 Swagger docs at http://localhost:${process.env.PORT ?? 3000}/api/docs`);
+
 }
 await bootstrap();
